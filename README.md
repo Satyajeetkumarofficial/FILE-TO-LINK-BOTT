@@ -108,3 +108,21 @@ For queries, feature requests, or bug reports, join our official channel:
     <img src="https://img.shields.io/badge/RexBots-Official%20Channel-blue?style=for-the-badge&logo=telegram">
   </a>
 </div>
+
+## High-Speed Streaming Stack
+
+This build uses **Hydrogram + TgCrypto + FFmpeg/FFprobe**.
+
+- Hydrogram handles Telegram MTProto communication.
+- TgCrypto accelerates Telegram cryptography automatically when installed.
+- FFmpeg/FFprobe are installed in the container for media tooling.
+- Direct File-to-Link streaming does **not** transcode through FFmpeg, avoiding unnecessary CPU work.
+- `STREAM_PREFETCH` controls parallel Telegram `GetFile` prefetch requests (default `4`, maximum `8`).
+
+Example:
+
+```bash
+STREAM_PREFETCH=6 python bot.py
+```
+
+Higher values can improve throughput on high-latency VPS routes, but they also increase concurrent Telegram requests and memory usage. Actual speed is dependent on Telegram DC, VPS network route, file and server conditions; 10–30 MB/s is a performance target, not a guaranteed Telegram rate.

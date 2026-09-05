@@ -1,5 +1,6 @@
-pyrofork==2.3.48
+hydrogram>=0.2.0
 tgcrypto
+uvloop
 aiohttp
 python-dotenv<=0.20.0
 motor
@@ -11,5 +12,3 @@ psutil
 jinja2
 pytz
 shortzy
-
-

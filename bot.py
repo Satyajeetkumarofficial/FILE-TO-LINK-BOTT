@@ -1,8 +1,15 @@
-import os, sys, glob, pytz, asyncio, logging, importlib
+import os, sys, glob, pytz, asyncio, logging, importlib, shutil
 from pathlib import Path
 
-from pyrogram import idle
-import pyrogram.utils  # Import pyrogram.utils explicitly
+from hydrogram import idle
+
+try:
+    import uvloop
+    uvloop.install()
+except ImportError:
+    pass
+
+import hydrogram.utils  # Import hydrogram.utils explicitly
 
 # ================= EVENT LOOP FIX (FINAL & SAFE) =================
 # Python 3.10+ compatible, no DeprecationWarning
@@ -13,7 +20,7 @@ except RuntimeError:
     asyncio.set_event_loop(loop)
 # ================================================================
 
-# Patch pyrogram.utils.get_peer_type to handle newer peer IDs
+# Patch hydrogram.utils.get_peer_type to handle newer peer IDs
 def get_peer_type_new(peer_id: int) -> str:
     peer_id_str = str(peer_id)
     if not peer_id_str.startswith("-"):
@@ -24,18 +31,27 @@ def get_peer_type_new(peer_id: int) -> str:
         return "chat"
 
 # Apply the patch
-pyrogram.utils.get_peer_type = get_peer_type_new
-pyrogram.utils.MIN_CHANNEL_ID = -1002822095763
+hydrogram.utils.get_peer_type = get_peer_type_new
+hydrogram.utils.MIN_CHANNEL_ID = -1002822095763
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logging.getLogger("aiohttp").setLevel(logging.ERROR)
-logging.getLogger("pyrogram").setLevel(logging.ERROR)
+logging.getLogger("hydrogram").setLevel(logging.ERROR)
 logging.getLogger("aiohttp.web").setLevel(logging.ERROR)
 
 from info import *
+
+# Runtime acceleration/tooling checks. FFmpeg is kept out of the hot streaming
+# path so direct Telegram -> HTTP streaming does not waste CPU transcoding.
+if not shutil.which("ffmpeg") or not shutil.which("ffprobe"):
+    raise RuntimeError("FFmpeg/FFprobe are required but were not found in PATH")
+try:
+    import tgcrypto  # noqa: F401
+except ImportError as exc:
+    raise RuntimeError("TgCrypto is required for the optimized Hydrogram build") from exc
 from Script import script
 from datetime import date, datetime
 from aiohttp import web
