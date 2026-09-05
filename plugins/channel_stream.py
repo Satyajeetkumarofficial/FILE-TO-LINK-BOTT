@@ -1,14 +1,14 @@
 import asyncio
 from web.utils.file_properties import get_hash
-from pyrogram import Client, filters
+from hydrogram import Client, filters
 from info import (
     BIN_CHANNEL, URL, BOT_USERNAME,
     IS_SHORTLINK, HOW_TO_OPEN, NO_STREAM_CHANNELS
 )
 from utils import get_shortlink
 from database.users_db import db
-from pyrogram.errors import FloodWait
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
+from hydrogram.errors import FloodWait
+from hydrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 
 
 @Client.on_message(

@@ -1,7 +1,7 @@
 import time
-from pyrogram import Client, filters
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
-from pyrogram.errors import FloodWait
+from hydrogram import Client, filters
+from hydrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
+from hydrogram.errors import FloodWait
 from info import URL, BOT_USERNAME, BIN_CHANNEL, CHANNEL, PROTECT_CONTENT, FSUB, MAX_FILES
 from database.users_db import db
 from web.utils.file_properties import get_hash

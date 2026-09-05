@@ -1,6 +1,6 @@
-from pyrogram.errors import UserNotParticipant, ChatAdminRequired
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
-from pyrogram.enums import ParseMode
+from hydrogram.errors import UserNotParticipant, ChatAdminRequired
+from hydrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
+from hydrogram.enums import ParseMode
 from Script import script
 from utils import check_verification, get_token
 from info import (

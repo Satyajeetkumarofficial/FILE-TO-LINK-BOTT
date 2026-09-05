@@ -3,11 +3,11 @@ import re
 import json
 import base64
 from struct import pack
-from pyrogram import Client, filters
-from pyrogram.types import Message
+from hydrogram import Client, filters
+from hydrogram.types import Message
 
-from pyrogram.errors import ChannelInvalid, UsernameInvalid, UsernameNotModified
-from pyrogram.file_id import FileId
+from hydrogram.errors import ChannelInvalid, UsernameInvalid, UsernameNotModified
+from hydrogram.file_id import FileId
 from info import LOG_CHANNEL, ADMINS, PUBLIC_FILE_STORE, BOT_USERNAME
 
 async def allowed(_, __, message):

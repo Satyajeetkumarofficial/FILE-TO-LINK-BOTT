@@ -1,9 +1,9 @@
 import os, random, asyncio, time, re, pytz
 from Script import script
 from database.users_db import db
-from pyrogram import Client, filters, enums
-from pyrogram.errors import *
-from pyrogram.types import *
+from hydrogram import Client, filters, enums
+from hydrogram.errors import *
+from hydrogram.types import *
 from info import BOT_USERNAME, URL, BATCH_PROTECT_CONTENT, ADMINS, PROTECT_CONTENT, OWNER_USERNAME, SUPPORT, PICS, FILE_PIC, CHANNEL, VERIFIED_LOG, LOG_CHANNEL, FSUB, BIN_CHANNEL, VERIFY_EXPIRE, BATCH_FILE_CAPTION, FILE_CAPTION, VERIFY_IMG, QR_CODE
 from datetime import datetime
 from web.utils.file_properties import get_hash

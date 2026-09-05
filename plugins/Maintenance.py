@@ -1,6 +1,6 @@
 import os
-from pyrogram import Client, filters
-from pyrogram.types import Message
+from hydrogram import Client, filters
+from hydrogram.types import Message
 from info import * 
 
 BYPASS_IDS = ADMINS + AUTH_CHANNEL + [BIN_CHANNEL, LOG_CHANNEL, PREMIUM_LOGS, VERIFIED_LOG]

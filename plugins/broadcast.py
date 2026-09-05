@@ -1,9 +1,9 @@
-from pyrogram import Client, filters
-from pyrogram.types import (
+from hydrogram import Client, filters
+from hydrogram.types import (
     InlineKeyboardButton, InlineKeyboardMarkup,
     ReplyKeyboardRemove
 )
-from pyrogram.errors import FloodWait, InputUserDeactivated, UserIsBlocked, PeerIdInvalid
+from hydrogram.errors import FloodWait, InputUserDeactivated, UserIsBlocked, PeerIdInvalid
 
 import time
 import asyncio
