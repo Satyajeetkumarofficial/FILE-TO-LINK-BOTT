@@ -4,7 +4,7 @@ from asyncio import sleep
 from datetime import datetime, timedelta
 from database.users_db import db
 from info import PREMIUM_LOGS
-from pyrogram import Client
+from hydrogram import Client
 
 async def web_server():
     web_app = web.Application(client_max_size=30000000)
