@@ -1,8 +1,8 @@
-from pyrogram import Client
+from hydrogram import Client
 from typing import Any, Optional
-from pyrogram.types import Message
-from pyrogram.file_id import FileId
-from pyrogram.raw.types.messages import Messages
+from hydrogram.types import Message
+from hydrogram.file_id import FileId
+from hydrogram.raw.types.messages import Messages
 import logging
 
 # ✅ Exception Definitions (Fixed)

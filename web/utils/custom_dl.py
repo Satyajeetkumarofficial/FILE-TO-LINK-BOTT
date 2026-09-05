@@ -1,14 +1,16 @@
 import asyncio
 import logging
+import os
+import sys
 from info import *
 from typing import Dict, Union
 from web.server import work_loads
-from pyrogram import Client, utils, raw
+from hydrogram import Client, utils, raw
 from .file_properties import get_file_ids
-from pyrogram.session import Session, Auth
-from pyrogram.errors import AuthBytesInvalid
+from hydrogram.session import Session, Auth
+from hydrogram.errors import AuthBytesInvalid
 from web.server.exceptions import FIleNotFound
-from pyrogram.file_id import FileId, FileType, ThumbnailSource
+from hydrogram.file_id import FileId, FileType, ThumbnailSource
 
 
 class ByteStreamer:
@@ -170,55 +172,74 @@ class ByteStreamer:
         part_count: int,
         chunk_size: int,
     ) -> Union[str, None]:
-        """
-        Custom generator that yields the bytes of the media file.
-        Modded from <https://github.com/eyaadh/megadlbot_oss/blob/master/mega/telegram/utils/custom_download.py#L20>
-        Thanks to Eyaadh <https://github.com/eyaadh>
+        """Stream Telegram media with ordered parallel prefetching.
+
+        Telegram's GetFile response is limited to about 1 MiB per request.
+        Instead of waiting for every request serially, we keep a small window
+        of requests in flight and yield their results in file order. This can
+        materially improve throughput on VPS routes with higher RTT while
+        keeping memory bounded.
         """
         client = self.client
         work_loads[index] += 1
-        logging.debug(f"Starting to yielding file with client {index}.")
-        media_session = await self.generate_media_session(client, file_id)
-
-        current_part = 1
-        location = await self.get_location(file_id)
-
+        media_session = None
         try:
-            r = await media_session.send(
-                raw.functions.upload.GetFile(
-                    location=location, offset=offset, limit=chunk_size
-                ),
-            )
-            if isinstance(r, raw.types.upload.File):
-                while True:
-                    chunk = r.bytes
-                    if not chunk:
-                        break
-                    elif part_count == 1:
-                        yield chunk[first_part_cut:last_part_cut]
-                    elif current_part == 1:
-                        yield chunk[first_part_cut:]
-                    elif current_part == part_count:
-                        yield chunk[:last_part_cut]
-                    else:
-                        yield chunk
+            media_session = await self.generate_media_session(client, file_id)
+            location = await self.get_location(file_id)
 
-                    current_part += 1
-                    offset += chunk_size
+            # 4 is a conservative default. Raise to 6/8 on a fast VPS if desired.
+            prefetch = max(1, min(8, int(os.getenv("STREAM_PREFETCH", "4"))))
 
-                    if current_part > part_count:
-                        break
-
-                    r = await media_session.send(
-                        raw.functions.upload.GetFile(
-                            location=location, offset=offset, limit=chunk_size
-                        ),
+            async def fetch(part_offset: int):
+                return await media_session.send(
+                    raw.functions.upload.GetFile(
+                        location=location, offset=part_offset, limit=chunk_size
                     )
-        except (TimeoutError, AttributeError):
-            pass
+                )
+
+            next_offset = offset
+            remaining = part_count
+            pending = {}
+
+            while remaining > 0 or pending:
+                while remaining > 0 and len(pending) < prefetch:
+                    task = asyncio.create_task(fetch(next_offset))
+                    pending[next_offset] = task
+                    next_offset += chunk_size
+                    remaining -= 1
+
+                current_offset, task = next(iter(pending.items()))
+                pending.pop(current_offset)
+                r = await task
+
+                if not isinstance(r, raw.types.upload.File) or not r.bytes:
+                    break
+
+                current_part = (current_offset - offset) // chunk_size + 1
+                chunk = r.bytes
+                if current_part == 1 and current_part == part_count:
+                    yield chunk[first_part_cut:last_part_cut]
+                elif current_part == 1:
+                    yield chunk[first_part_cut:]
+                elif current_part == part_count:
+                    yield chunk[:last_part_cut]
+                else:
+                    yield chunk
+
+        except (TimeoutError, AttributeError, asyncio.CancelledError):
+            if isinstance(sys.exc_info()[1], asyncio.CancelledError):
+                raise
+            logging.exception("Telegram media streaming error")
         finally:
-            logging.debug("Finished yielding file with {current_part} parts.")
+            # Cancel any outstanding prefetch tasks if the client disconnects.
+            if 'pending' in locals():
+                for task in pending.values():
+                    if not task.done():
+                        task.cancel()
+                if pending:
+                    await asyncio.gather(*pending.values(), return_exceptions=True)
             work_loads[index] -= 1
+            logging.debug("Finished yielding file")
 
     async def clean_cache(self) -> None:
         """
