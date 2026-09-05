@@ -1,5 +1,5 @@
 import logging
-from pyrogram import Client, types
+from hydrogram import Client, types
 from typing import Union, Optional, AsyncGenerator
 from info import *
 from utils import Temp
@@ -9,7 +9,7 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
-for mod in ["aiohttp", "pyrogram", "aiohttp.web"]:
+for mod in ["aiohttp", "hydrogram", "aiohttp.web"]:
     logging.getLogger(mod).setLevel(logging.ERROR)
 
 

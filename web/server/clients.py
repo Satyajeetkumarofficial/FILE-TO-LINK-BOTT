@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from info import *
-from pyrogram import Client
+from hydrogram import Client
 from web.utils.config_parser import TokenParser
 from web.server import multi_clients, work_loads, StreamBot
 
